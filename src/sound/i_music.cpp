@@ -766,6 +766,12 @@ ADD_STAT(music)
 
 CCMD (writeopl)
 {
+	// [TSPG]
+	#if defined( SERVER_ONLY ) && defined( SERVER_BLACKLIST )
+		if ( gamestate != GS_STARTUP )
+			return;
+	#endif
+
 	if (argv.argc() == 2)
 	{
 		if (currSong == NULL)
@@ -804,6 +810,11 @@ CCMD (writeopl)
 
 CCMD (writewave)
 {
+	// [TSPG]
+	#if defined( SERVER_ONLY ) && defined( SERVER_BLACKLIST )
+		if ( gamestate != GS_STARTUP )
+			return;
+	#endif
 	if (argv.argc() >= 2 && argv.argc() <= 3)
 	{
 		if (currSong == NULL)
@@ -842,6 +853,11 @@ CCMD (writewave)
 
 CCMD (writemidi)
 {
+	// [TSPG]
+	#if defined( SERVER_ONLY ) && defined( SERVER_BLACKLIST )
+		if ( gamestate != GS_STARTUP )
+			return;
+	#endif
 	if (argv.argc() != 2)
 	{
 		Printf("Usage: writemidi <filename>");
