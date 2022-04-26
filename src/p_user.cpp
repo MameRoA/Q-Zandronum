@@ -2834,7 +2834,7 @@ CUSTOM_CVAR (Float, sv_aircontrol, 0.00390625f, CVAR_SERVERINFO|CVAR_NOSAVE)
 =
 =================
 */
-void P_MovePlayer (player_t *player, ticcmd_t *cmd)
+void P_MovePlayer (player_t *player)
 {
 	// [BB] A client doesn't know enough about the other players to make their movement.
 	if ( NETWORK_InClientMode() &&
@@ -2843,6 +2843,7 @@ void P_MovePlayer (player_t *player, ticcmd_t *cmd)
 		return;
 	}
 
+	ticcmd_t *cmd = &player->cmd;
 	APlayerPawn *mo = player->mo;
 
 	// [Leo] cl_spectatormove is now applied here to avoid code duplication.
@@ -3420,7 +3421,7 @@ void P_CrouchMove(player_t * player, int direction)
 //
 //----------------------------------------------------------------------------
 
-void P_PlayerThink (player_t *player, ticcmd_t *pCmd)
+void P_PlayerThink (player_t *player)
 {
 	ticcmd_t *cmd;
 	angle_t oldangle;
@@ -3547,11 +3548,7 @@ void P_PlayerThink (player_t *player, ticcmd_t *pCmd)
 		player->mo->flags &= ~MF_NOGRAVITY;
 	}
 
-	// If we're predicting, use the ticcmd we pass in.
-	if ( CLIENT_PREDICT_IsPredicting( ))
-		cmd = pCmd;
-	else
-		cmd = &player->cmd;
+	cmd = &player->cmd;
 
 	// Make unmodified copies for ACS's GetPlayerInput.
 	player->original_oldbuttons = player->original_cmd.buttons;
@@ -3751,7 +3748,7 @@ void P_PlayerThink (player_t *player, ticcmd_t *pCmd)
 	}
 	else
 	{
-		P_MovePlayer (player, cmd);
+		P_MovePlayer (player);
 
 		if (cmd->ucmd.upmove == -32768)
 		{ // Only land if in the air
