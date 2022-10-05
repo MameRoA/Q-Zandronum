@@ -91,6 +91,7 @@ static	LONG		g_lSavedReactionTime[CLIENT_PREDICTION_TICS];
 static	LONG		g_lSavedWaterLevel[CLIENT_PREDICTION_TICS];
 static	bool		g_bSavedOnFloor[CLIENT_PREDICTION_TICS];
 static	bool		g_bSavedOnMobj[CLIENT_PREDICTION_TICS];
+static	bool		g_bSavedOnGround[CLIENT_PREDICTION_TICS];
 static	fixed_t		g_SavedFloorZ[CLIENT_PREDICTION_TICS];
 
 #ifdef	_DEBUG
@@ -105,6 +106,7 @@ static	void	client_predict_BeginPrediction( player_t *pPlayer );
 static	void	client_predict_DoPrediction( player_t *pPlayer, ULONG ulTicks );
 static	void	client_predict_EndPrediction( player_t *pPlayer );
 static	void	client_predict_SaveOnGroundStatus( const player_t *pPlayer, const ULONG Tick );
+static	void	client_predict_AdjustZ( APlayerPawn *mo );
 
 //*****************************************************************************
 //	FUNCTIONS
@@ -233,6 +235,8 @@ void CLIENT_PREDICT_PlayerPredict( void )
 
 	// Restore crucial attributes for this tick.
 	client_predict_EndPrediction( pPlayer );
+	
+	client_predict_AdjustZ( pPlayer->mo );
 
 #ifdef	_DEBUG
 	if ( cl_showpredictionsuccess )
@@ -317,6 +321,8 @@ static void client_predict_SaveOnGroundStatus( const player_t *pPlayer, const UL
 
 	// [BB] Remember whether the player was standing on another actor.
 	g_bSavedOnMobj[Tick % CLIENT_PREDICTION_TICS] = !!(pPlayer->mo->flags2 & MF2_ONMOBJ);
+	// The "onground" status is not necessarily the same as g_bSavedOnFloor.
+	g_bSavedOnGround[Tick % CLIENT_PREDICTION_TICS] = pPlayer->onground;
 }
 
 //*****************************************************************************
@@ -356,19 +362,21 @@ static void client_predict_DoPrediction( player_t *pPlayer, ULONG ulTicks )
 		g_bSavedOnMobj[lTick % CLIENT_PREDICTION_TICS] = false;
 	}
 
-	// [BB] Restore the saved "on ground" status.
-	if ( g_bSavedOnMobj[lTick % CLIENT_PREDICTION_TICS] )
-		pPlayer->mo->flags2 |= MF2_ONMOBJ;
-	else
-		pPlayer->mo->flags2 &= ~MF2_ONMOBJ;
-	pPlayer->onground = g_bSavedOnFloor[lTick % CLIENT_PREDICTION_TICS];
-	if ( g_bSavedOnFloor[lTick % CLIENT_PREDICTION_TICS] )
-		pPlayer->mo->z = client_predict_GetPredictedFloorZ ( pPlayer, lTick );
-
 	while ( ulTicks )
 	{
 		// Disable bobbing, sounds, etc.
 		g_bPredicting = true;
+
+		client_predict_AdjustZ( pPlayer->mo );
+		
+		// [BB] Restore the saved "on ground" status.
+		if ( g_bSavedOnMobj[lTick % CLIENT_PREDICTION_TICS] )
+			pPlayer->mo->flags2 |= MF2_ONMOBJ;
+		else
+			pPlayer->mo->flags2 &= ~MF2_ONMOBJ;
+		pPlayer->onground = g_bSavedOnGround[lTick % CLIENT_PREDICTION_TICS];
+		if ( g_bSavedOnFloor[lTick % CLIENT_PREDICTION_TICS] )
+			pPlayer->mo->z = client_predict_GetPredictedFloorZ ( pPlayer, lTick % CLIENT_PREDICTION_TICS );
 
 		// Use backed up values for prediction.
 		pPlayer->mo->angle = g_SavedAngle[lTick % CLIENT_PREDICTION_TICS];
@@ -405,6 +413,11 @@ static void client_predict_DoPrediction( player_t *pPlayer, ULONG ulTicks )
 //
 static void client_predict_EndPrediction( player_t *pPlayer )
 {
+	client_predict_AdjustZ( pPlayer->mo );
+
+	if ( g_bSavedOnFloor[g_ulGameTick % CLIENT_PREDICTION_TICS] )
+		pPlayer->mo->z = client_predict_GetPredictedFloorZ( pPlayer, g_ulGameTick % CLIENT_PREDICTION_TICS );
+
 	pPlayer->mo->angle = g_SavedAngle[g_ulGameTick % CLIENT_PREDICTION_TICS];
 	pPlayer->mo->pitch = g_SavedPitch[g_ulGameTick % CLIENT_PREDICTION_TICS];
 	pPlayer->mo->Speed = g_SavedSpeed[g_ulGameTick % CLIENT_PREDICTION_TICS];
@@ -413,4 +426,24 @@ static void client_predict_EndPrediction( player_t *pPlayer )
 	pPlayer->turnticks = g_SavedTurnTicks[g_ulGameTick % CLIENT_PREDICTION_TICS];
 	pPlayer->mo->reactiontime = g_lSavedReactionTime[g_ulGameTick % CLIENT_PREDICTION_TICS];
 	pPlayer->mo->waterlevel = g_lSavedWaterLevel[g_ulGameTick % CLIENT_PREDICTION_TICS];
+}
+
+static void client_predict_AdjustZ( APlayerPawn *mo )
+{
+	FCheckPosition tm;
+	if (P_CheckPosition(mo, mo->x, mo->y, tm))
+	{
+		mo->floorz = tm.floorz;
+		mo->ceilingz = tm.ceilingz;
+		mo->dropoffz = tm.dropoffz;		// killough 11/98: remember dropoffs
+		mo->floorpic = tm.floorpic;
+		mo->floorsector = tm.floorsector;
+		mo->ceilingpic = tm.ceilingpic;
+		mo->ceilingsector = tm.ceilingsector;
+
+		if ( mo->z < mo->floorz )
+			mo->z = mo->floorz;
+		if ( mo->z > mo->ceilingz - mo->height )
+			mo->z = mo->ceilingz - mo->height;
+	}
 }
