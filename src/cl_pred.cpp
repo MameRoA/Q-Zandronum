@@ -329,6 +329,21 @@ static void client_predict_SaveOnGroundStatus( const player_t *pPlayer, const UL
 //
 static void client_predict_BeginPrediction( player_t *pPlayer )
 {
+	// Record the sectors
+	for (int i = 0; i < numsectors; ++i)
+	{
+		sectors[i].floorplane.predictD[g_ulGameTick % CLIENT_PREDICTION_TICS] = sectors[i].floorplane.d;
+		sectors[i].ceilingplane.predictD[g_ulGameTick % CLIENT_PREDICTION_TICS] = sectors[i].ceilingplane.d;
+	}
+
+	// Record the PolyActions
+	TThinkerIterator<DPolyAction> polyActionIt;
+	DPolyAction *polyAction = NULL;
+
+	polyActionIt.Reinit();
+	while ((polyAction = polyActionIt.Next()))
+		polyAction->RecordPredict( g_ulGameTick % CLIENT_PREDICTION_TICS );
+
 	g_SavedAngle[g_ulGameTick % CLIENT_PREDICTION_TICS] = pPlayer->mo->angle;
 	g_SavedPitch[g_ulGameTick % CLIENT_PREDICTION_TICS] = pPlayer->mo->pitch;
 	g_SavedSpeed[g_ulGameTick % CLIENT_PREDICTION_TICS] = pPlayer->mo->Speed;
@@ -367,6 +382,21 @@ static void client_predict_DoPrediction( player_t *pPlayer, ULONG ulTicks )
 		// Disable bobbing, sounds, etc.
 		g_bPredicting = true;
 
+		// Predict the sectors
+		for (int i = 0; i < numsectors; ++i)
+		{
+			sectors[i].floorplane.d = sectors[i].floorplane.predictD[lTick % CLIENT_PREDICTION_TICS];
+			sectors[i].ceilingplane.d = sectors[i].ceilingplane.predictD[lTick % CLIENT_PREDICTION_TICS];
+		}
+
+		//reconcile the PolyActions
+		TThinkerIterator<DPolyAction> polyActionIt;
+		DPolyAction *polyAction = NULL;
+
+		polyActionIt.Reinit();
+		while ((polyAction = polyActionIt.Next()))
+			polyAction->RestorePredict(lTick % CLIENT_PREDICTION_TICS);
+		
 		client_predict_AdjustZ( pPlayer->mo );
 		
 		// [BB] Restore the saved "on ground" status.
@@ -415,6 +445,20 @@ static void client_predict_DoPrediction( player_t *pPlayer, ULONG ulTicks )
 //
 static void client_predict_EndPrediction( player_t *pPlayer )
 {
+	for (int i = 0; i < numsectors; ++i)
+	{
+		sectors[i].floorplane.d = sectors[i].floorplane.predictD[g_ulGameTick % CLIENT_PREDICTION_TICS];
+		sectors[i].ceilingplane.d = sectors[i].ceilingplane.predictD[g_ulGameTick % CLIENT_PREDICTION_TICS];
+	}
+
+	//reconcile the PolyActions
+	TThinkerIterator<DPolyAction> polyActionIt;
+	DPolyAction *polyAction = NULL;
+
+	polyActionIt.Reinit();
+	while ((polyAction = polyActionIt.Next()))
+		polyAction->RestorePredict(g_ulGameTick % CLIENT_PREDICTION_TICS);
+	
 	client_predict_AdjustZ( pPlayer->mo );
 
 	if ( g_bSavedOnFloor[g_ulGameTick % CLIENT_PREDICTION_TICS] )

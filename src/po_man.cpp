@@ -322,6 +322,18 @@ void DPolyAction::SetDist (LONG lDist)
 	m_Dist = lDist;
 }
 
+// [geNia] This should never be called.
+void DPolyAction::RecordPredict (LONG lTick)
+{
+	Printf("WARNING: DPolyAction::RecordPredict was called. This should never happen! Please report this at the %s bug tracker!\n", GAMENAME);
+}
+
+// [geNia] This should never be called.
+void DPolyAction::RestorePredict (LONG lTick)
+{
+	Printf("WARNING: DPolyAction::RestorePredict was called. This should never happen! Please report this at the %s bug tracker!\n", GAMENAME);
+}
+
 LONG DPolyAction::GetPolyObj ()
 {
 	return ( m_PolyObj );

@@ -676,6 +676,9 @@ public:
 
 	LONG	GetPolyObj( void );
 
+	virtual void RecordPredict( LONG lTick );
+	virtual void RestorePredict( LONG lTick );
+
 	virtual void UpdateToClient( ULONG ulClient ); // [WS] We need this here.
 protected:
 	DPolyAction ();
