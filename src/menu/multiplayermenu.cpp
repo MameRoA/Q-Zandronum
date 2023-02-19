@@ -227,11 +227,26 @@ enum
 
 static FIntCVar* const BotTeamSlots[MAX_BOTTEAM_SLOTS] =
 {
-	&menu_teambotspawn0,  &menu_teambotspawn1,  &menu_teambotspawn2,  &menu_teambotspawn3,
-	&menu_teambotspawn4,  &menu_teambotspawn5,  &menu_teambotspawn6,  &menu_teambotspawn7,
-	&menu_teambotspawn8,  &menu_teambotspawn9,  &menu_teambotspawn10, &menu_teambotspawn11,
+	&menu_teambotspawn0, &menu_teambotspawn1, &menu_teambotspawn2, &menu_teambotspawn3,
+	&menu_teambotspawn4, &menu_teambotspawn5, &menu_teambotspawn6, &menu_teambotspawn7,
+	&menu_teambotspawn8, &menu_teambotspawn9, &menu_teambotspawn10, &menu_teambotspawn11,
 	&menu_teambotspawn12, &menu_teambotspawn13, &menu_teambotspawn14, &menu_teambotspawn15,
 	&menu_teambotspawn16, &menu_teambotspawn17, &menu_teambotspawn18, &menu_teambotspawn19,
+	&menu_teambotspawn20, &menu_teambotspawn21, &menu_teambotspawn22, &menu_teambotspawn23,
+	&menu_teambotspawn24, &menu_teambotspawn25, &menu_teambotspawn26, &menu_teambotspawn27,
+	&menu_teambotspawn28, &menu_teambotspawn29, &menu_teambotspawn30, &menu_teambotspawn31,
+	&menu_teambotspawn32, &menu_teambotspawn33, &menu_teambotspawn34, &menu_teambotspawn35,
+	&menu_teambotspawn36, &menu_teambotspawn37, &menu_teambotspawn38, &menu_teambotspawn39,
+	&menu_teambotspawn40, &menu_teambotspawn41, &menu_teambotspawn42, &menu_teambotspawn43,
+	&menu_teambotspawn44, &menu_teambotspawn45, &menu_teambotspawn46, &menu_teambotspawn47,
+	&menu_teambotspawn48, &menu_teambotspawn49, &menu_teambotspawn50, &menu_teambotspawn51,
+	&menu_teambotspawn52, &menu_teambotspawn53, &menu_teambotspawn54, &menu_teambotspawn55,
+	&menu_teambotspawn56, &menu_teambotspawn57, &menu_teambotspawn58, &menu_teambotspawn59,
+	&menu_teambotspawn60, &menu_teambotspawn61, &menu_teambotspawn62, &menu_teambotspawn63,
+	&menu_teambotspawn64, &menu_teambotspawn65, &menu_teambotspawn66, &menu_teambotspawn67,
+	&menu_teambotspawn68, &menu_teambotspawn69, &menu_teambotspawn70, &menu_teambotspawn71,
+	&menu_teambotspawn72, &menu_teambotspawn73, &menu_teambotspawn74, &menu_teambotspawn75,
+	&menu_teambotspawn76, &menu_teambotspawn77, &menu_teambotspawn78, &menu_teambotspawn79,
 };
 
 static FIntCVar* const BotSlots[] =
